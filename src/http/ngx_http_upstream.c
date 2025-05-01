@@ -10,6 +10,12 @@
 #include <ngx_http.h>
 
 
+typedef struct {
+    ngx_str_t                  key;
+    ngx_http_complex_value_t   value;
+} ngx_http_upstream_early_hint_t;
+
+
 #if (NGX_HTTP_CACHE)
 static ngx_int_t ngx_http_upstream_cache(ngx_http_request_t *r,
     ngx_http_upstream_t *u);
@@ -47,6 +53,8 @@ static void ngx_http_upstream_send_request_handler(ngx_http_request_t *r,
     ngx_http_upstream_t *u);
 static void ngx_http_upstream_read_request_handler(ngx_http_request_t *r);
 static void ngx_http_upstream_process_header(ngx_http_request_t *r,
+    ngx_http_upstream_t *u);
+static ngx_int_t ngx_http_upstream_send_early_hints(ngx_http_request_t *r,
     ngx_http_upstream_t *u);
 static ngx_int_t ngx_http_upstream_process_early_hints(ngx_http_request_t *r,
     ngx_http_upstream_t *u);
@@ -714,6 +722,11 @@ ngx_http_upstream_init_request(ngx_http_request_t *r)
     cln->handler = ngx_http_upstream_cleanup;
     cln->data = r;
     u->cleanup = &cln->handler;
+
+    if (ngx_http_upstream_send_early_hints(r, u) != NGX_OK) {
+        ngx_http_finalize_request(r, NGX_HTTP_INTERNAL_SERVER_ERROR);
+        return;
+    }
 
     if (u->resolved == NULL) {
 
@@ -2642,6 +2655,59 @@ ngx_http_upstream_process_early_hints(ngx_http_request_t *r,
 #endif
 
     u->buffer.last = u->buffer.pos;
+
+    return NGX_OK;
+}
+
+
+static ngx_int_t
+ngx_http_upstream_send_early_hints(ngx_http_request_t *r,
+    ngx_http_upstream_t *u)
+{
+    ngx_str_t                        value;
+    ngx_uint_t                       i;
+    ngx_table_elt_t                 *t;
+    ngx_connection_t                *c;
+    ngx_http_upstream_early_hint_t  *eh;
+
+    if (u->conf->early_hints == NULL) {
+        return NGX_OK;
+    }
+
+    eh = u->conf->early_hints->elts;
+    for (i = 0; i < u->conf->early_hints->nelts; i++) {
+
+        if (ngx_http_complex_value(r, &eh[i].value, &value) != NGX_OK) {
+            return NGX_ERROR;
+        }
+
+        if (value.len) {
+            t = ngx_list_push(&r->headers_out.headers);
+            if (t == NULL) {
+                return NGX_ERROR;
+            }
+
+            t->key = eh[i].key;
+            t->value = value;
+            t->hash = 1;
+        }
+    }
+
+    c = r->connection;
+
+    if (ngx_http_send_early_hints(r) == NGX_ERROR) {
+        return NGX_ERROR;
+    }
+
+    if (c->buffered) {
+        if (ngx_handle_write_event(c->write, 0) != NGX_OK) {
+            return NGX_ERROR;
+        }
+
+        r->write_event_handler = ngx_http_upstream_early_hints_writer;
+    }
+
+    ngx_http_clean_header(r);
 
     return NGX_OK;
 }
@@ -7033,6 +7099,50 @@ ngx_http_upstream_hide_headers_hash(ngx_conf_t *cf,
     {
         prev->hide_headers_hash = conf->hide_headers_hash;
     }
+
+    return NGX_OK;
+}
+
+
+char *
+ngx_http_upstream_early_hint_set_slot(ngx_conf_t *cf, ngx_command_t *cmd,
+    void *conf)
+{
+    char  *p = conf;
+
+    ngx_str_t                          *value;
+    ngx_array_t                       **parray;
+    ngx_http_upstream_early_hint_t     *eh;
+    ngx_http_compile_complex_value_t    ccv;
+
+    parray = (ngx_array_t **) (p + cmd->offset);
+
+    if (*parray == NGX_CONF_UNSET_PTR) {
+        *parray = ngx_array_create(cf->pool, 1,
+                                   sizeof(ngx_http_upstream_early_hint_t));
+        if (*parray == NULL) {
+            return NGX_CONF_ERROR;
+        }
+    }
+
+    eh = ngx_array_push(*parray);
+    if (eh == NULL) {
+        return NGX_CONF_ERROR;
+    }
+
+    value = cf->args->elts;
+
+    ngx_memzero(&ccv, sizeof(ngx_http_compile_complex_value_t));
+
+    ccv.cf = cf;
+    ccv.value = &value[2];
+    ccv.complex_value = &eh->value;
+
+    if (ngx_http_compile_complex_value(&ccv) != NGX_OK) {
+        return NGX_CONF_ERROR;
+    }
+
+    eh->key = value[1];
 
     return NGX_OK;
 }

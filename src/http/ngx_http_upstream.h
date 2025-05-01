@@ -197,6 +197,7 @@ typedef struct {
     ngx_hash_t                       hide_headers_hash;
     ngx_array_t                     *hide_headers;
     ngx_array_t                     *pass_headers;
+    ngx_array_t                     *early_hints;
 
     ngx_http_upstream_local_t       *local;
     ngx_flag_t                       socket_keepalive;
@@ -439,6 +440,8 @@ char *ngx_http_upstream_param_set_slot(ngx_conf_t *cf, ngx_command_t *cmd,
 ngx_int_t ngx_http_upstream_hide_headers_hash(ngx_conf_t *cf,
     ngx_http_upstream_conf_t *conf, ngx_http_upstream_conf_t *prev,
     ngx_str_t *default_hide_headers, ngx_hash_init_t *hash);
+char *ngx_http_upstream_early_hint_set_slot(ngx_conf_t *cf, ngx_command_t *cmd,
+    void *conf);
 #if (NGX_HTTP_SSL)
 ngx_int_t ngx_http_upstream_merge_ssl_passwords(ngx_conf_t *cf,
     ngx_http_upstream_conf_t *conf, ngx_http_upstream_conf_t *prev);
