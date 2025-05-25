@@ -2,29 +2,38 @@ trigger:
 - main
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
 variables:
-  resourceGroup: haneenweu
-  containerAppName: acahaneen
-  environmentName: managedEnvironment-haneenweu-8ec8
-  location: westeurope
-  imageName: nginx:latest
+  resourceGroupName: 'haneenweu'
+  location: 'westeurope'
+  containerAppName: 'acahaneen'
+  environmentName: 'managedEnvironment-haneenweu-8ec8'
+  bicepFile: 'nginx-containerapp.bicep'
+  parametersFile: 'nginx-containerapp.parameters.json'
 
 steps:
+
 - task: AzureCLI@2
   inputs:
-    azureSubscription: '8e08d5d6-7dbc-4fe5-8da3-8f773ce909c7'
+    azureSubscription: '<Your Azure Connection Name>'
     scriptType: bash
     scriptLocation: inlineScript
     inlineScript: |
-     # Create Container App with external ingress
-      az containerapp create \
-        --name ${{ variables.containerAppName }} \
-        --resource-group ${{ variables.resourceGroup }} \
-        --environment ${{ variables.environmentName }} \
-        --image ${{ variables.imageName }} \
-        --target-port 80 \
-        --ingress external \
-        --transport http
-    displayName: 'Deploy Nginx to Azure Container Apps'
+      az --version
+      az group create --name ${{ variables.resourceGroupName }} --location ${{ variables.location }}
+    displayName: 'Create Resource Group if Needed'
+
+- task: AzureResourceManagerTemplateDeployment@3
+  displayName: 'Deploy Nginx to Azure Container App via Bicep'
+  inputs:
+    deploymentScope: 'Resource Group'
+    azureResourceManagerConnection: '<Your Azure Connection Name>'
+    subscriptionId: '<Your Subscription ID>'
+    action: 'Create Or Update Resource Group'
+    resourceGroupName: '$(resourceGroupName)'
+    location: '$(location)'
+    templateLocation: 'Linked artifact'
+    csmFile: '$(bicepFile)'
+    csmParametersFile: '$(parametersFile)'
+    deploymentMode: 'Incremental'
