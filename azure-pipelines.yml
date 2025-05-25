@@ -18,15 +18,13 @@ steps:
     scriptType: bash
     scriptLocation: inlineScript
     inlineScript: |
-      # Create Container App if it doesn't exist
+     # Create Container App with external ingress
       az containerapp create \
         --name ${{ variables.containerAppName }} \
         --resource-group ${{ variables.resourceGroup }} \
         --environment ${{ variables.environmentName }} \
         --image ${{ variables.imageName }} \
         --target-port 80 \
-        --ingress 'external' \
-        --revision-suffix nginxv1 \
-        --query-properties configuration.ingress.external=true \
+        --ingress external \
         --transport http
     displayName: 'Deploy Nginx to Azure Container Apps'
