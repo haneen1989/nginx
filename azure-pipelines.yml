@@ -24,7 +24,7 @@ steps:
       az group create --name ${{ variables.resourceGroupName }} --location ${{ variables.location }}
     displayName: 'Create Resource Group if Needed'
 
-- task: AzureResourceManagerTemplateDeployment@3
+- task: AzureResourceManagerTemplateDeployment@3.255.0
   displayName: 'Deploy Nginx to Azure Container App via Bicep'
   inputs:
     deploymentScope: 'Resource Group'
