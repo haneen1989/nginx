@@ -29,7 +29,7 @@ steps:
   inputs:
     deploymentScope: 'Resource Group'
     azureResourceManagerConnection: '8e08d5d6-7dbc-4fe5-8da3-8f773ce909c7'
-    subscriptionId: '<Your Subscription ID>'
+    subscriptionId: 'a9418ddc-91db-4d80-9945-d09bb8fcdd07'
     action: 'Create Or Update Resource Group'
     resourceGroupName: '$(resourceGroupName)'
     location: '$(location)'
