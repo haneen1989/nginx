@@ -16,7 +16,7 @@ steps:
 
 - task: AzureCLI@2
   inputs:
-    azureSubscription: '<Your Azure Connection Name>'
+    azureSubscription: '8e08d5d6-7dbc-4fe5-8da3-8f773ce909c7'
     scriptType: bash
     scriptLocation: inlineScript
     inlineScript: |
