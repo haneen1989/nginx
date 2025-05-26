@@ -1,0 +1,43 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "backendImage": {
+      "type": "string"
+    },
+    "backendIngressTraffic": {
+      "type": "string",
+      "allowedValues": [ "internal", "external" ]
+    },
+    "backendRevisionSuffix": {
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.App/containerApps",
+      "apiVersion": "2023-05-01",
+      "name": "nginx-container-app",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', 'nginx-env')]",
+        "configuration": {
+          "ingress": {
+            "external": "[equals(parameters('backendIngressTraffic'), 'external')]",
+            "targetPort": 80,
+            "transport": "auto"
+          }
+        },
+        "template": {
+          "revisionSuffix": "[parameters('backendRevisionSuffix')]",
+          "containers": [
+            {
+              "name": "nginx",
+              "image": "[parameters('backendImage')]"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
