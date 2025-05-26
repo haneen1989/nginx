@@ -22,8 +22,8 @@ steps:
     subscriptionId: '$(subscriptionId)'
     resourceGroupName: '$(resourceGroupApps)'
     location: 'northeurope'
-    csmFile: '$(Pipeline.WorkSpace)/Infrastructure/IaC/ContainerApps/ARM Templates/ContainerApps.json'
-    csmParametersFile: '$(Pipeline.WorkSpace)/Infrastructure/IaC/Common-Configurations/prod-inter/Generated/ContainerApps.parameters.json'
+    csmFile: 'ContainerApps.json'
+    csmParametersFile: 'ContainerApps.parameters.json'
     overrideParameters: >-
       -backendImage $(backendImage)
       -backendIngressTraffic $(backendIngressTraffic)
