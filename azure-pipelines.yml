@@ -3,7 +3,7 @@ trigger:
 
 variables:
   subscriptionId: 'a9418ddc-91db-4d80-9945-d09bb8fcdd07'
-  resourceGroupApps: 'haneensouthafricanorth'
+  resourceGroupApps: 'haneenweu'
   backendImage: 'nginx:latest'
   backendIngressTraffic: 'external'
   backendRevisionSuffix: 'nginx-test'
