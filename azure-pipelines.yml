@@ -15,7 +15,7 @@ steps:
 - task: AzureResourceManagerTemplateDeployment@3
   displayName: Deploy Container Apps
   inputs:
-    azureResourceManagerConnection: 'sc-retailapp-prd'
+    azureResourceManagerConnection: 'haneenarm'
     subscriptionId: '$(subscriptionId)'
     resourceGroupName: '$(resourceGroupApps)'
     location: 'northeurope'
