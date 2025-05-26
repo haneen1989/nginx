@@ -5,8 +5,8 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  resourceGroupName: 'haneenweu'
-  location: 'westeurope'
+  resourceGroupName: 'haneensouthafricanorth'
+  location: 'northeurope'
   containerAppName: 'acahaneen'
   environmentName: 'managedEnvironment-haneenweu-8ec8'
   bicepFile: 'nginx-containerapp.bicep'
