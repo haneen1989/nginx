@@ -5,35 +5,28 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  resourceGroupName: 'haneensouthafricanorth'
-  location: 'northeurope'
-  containerAppName: 'acahaneen'
-  environmentName: 'managedEnvironment-haneenweu-8ec8'
-  bicepFile: 'nginx-containerapp.bicep'
-  parametersFile: 'nginx-containerapp.parameters.json'
+  subscriptionId: '8e08d5d6-7dbc-4fe5-8da3-8f773ce909c7'
+  resourceGroupApps: 'haneensouthafricanorth'
+  backendImage: 'nginx:latest'
+  backendIngressTraffic: 'external'
+  backendRevisionSuffix: 'nginx-test'
+
+pool:
+  vmImage: 'ubuntu-latest'
 
 steps:
-
-- task: AzureCLI@2
+- task: AzureResourceManagerTemplateDeployment@3
+  displayName: Deploy Container Apps
   inputs:
-    azureSubscription: '8e08d5d6-7dbc-4fe5-8da3-8f773ce909c7'
-    scriptType: bash
-    scriptLocation: inlineScript
-    inlineScript: |
-      az --version
-      az group create --name ${{ variables.resourceGroupName }} --location ${{ variables.location }}
-    displayName: 'Create Resource Group if Needed'
-
-- task: AzureResourceManagerTemplateDeployment@3.255.0
-  displayName: 'Deploy Nginx to Azure Container App via Bicep'
-  inputs:
-    deploymentScope: 'Resource Group'
-    azureResourceManagerConnection: '8e08d5d6-7dbc-4fe5-8da3-8f773ce909c7'
-    subscriptionId: 'a9418ddc-91db-4d80-9945-d09bb8fcdd07'
-    action: 'Create Or Update Resource Group'
-    resourceGroupName: '$(resourceGroupName)'
-    location: '$(location)'
-    templateLocation: 'Linked artifact'
-    csmFile: '$(bicepFile)'
-    csmParametersFile: '$(parametersFile)'
+    azureResourceManagerConnection: 'sc-retailapp-prd'
+    subscriptionId: '$(subscriptionId)'
+    resourceGroupName: '$(resourceGroupApps)'
+    location: 'northeurope'
+    csmFile: '$(Pipeline.WorkSpace)/Infrastructure/IaC/ContainerApps/ARM Templates/ContainerApps.json'
+    csmParametersFile: '$(Pipeline.WorkSpace)/Infrastructure/IaC/Common-Configurations/prod-inter/Generated/ContainerApps.parameters.json'
+    overrideParameters: >-
+      -backendImage $(backendImage)
+      -backendIngressTraffic $(backendIngressTraffic)
+      -backendRevisionSuffix $(backendRevisionSuffix)
     deploymentMode: 'Incremental'
+    deploymentName: '$(Build.Buildnumber)-$(System.JobAttempt)'
