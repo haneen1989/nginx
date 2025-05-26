@@ -1,9 +1,6 @@
 trigger:
 - main
 
-pool:
-  vmImage: 'ubuntu-latest'
-
 variables:
   subscriptionId: '8e08d5d6-7dbc-4fe5-8da3-8f773ce909c7'
   resourceGroupApps: 'haneensouthafricanorth'
