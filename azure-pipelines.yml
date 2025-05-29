@@ -24,4 +24,4 @@ steps:
       -backendImage $(backendImage) -backendIngressTraffic $(backendIngressTraffic) -backendRevisionSuffix $(backendRevisionSuffix)
   deploymentMode: Incremental
   deploymentName: "$(Build.Buildnumber)-$(System.JobAttempt)"
-  displayName: Deploy Container Apps
+displayName: Deploy Container Apps
