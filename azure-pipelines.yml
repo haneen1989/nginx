@@ -13,17 +13,15 @@ pool:
 
 steps:
 - task: AzureResourceManagerTemplateDeployment@3
+ inputs:
+  azureResourceManagerConnection: haneenarm
+  subscriptionId: $(subscriptionId)
+  resourceGroupName: $(resourceGroupApps)
+  location: northeurope
+  csmFile: "ContainerApps.json"
+  csmParametersFile: ContainerApps.parameters.json
+  overrideParameters: >-
+      -backendImage $(backendImage) -backendIngressTraffic $(backendIngressTraffic) -backendRevisionSuffix $(backendRevisionSuffix)
+  deploymentMode: Incremental
+  deploymentName: "$(Build.Buildnumber)-$(System.JobAttempt)"
   displayName: Deploy Container Apps
-  inputs:
-    azureResourceManagerConnection: 'haneenarm'
-    subscriptionId: '$(subscriptionId)'
-    resourceGroupName: '$(resourceGroupApps)'
-    location: 'northeurope'
-    csmFile: 'ContainerApps.json'
-    csmParametersFile: 'ContainerApps.parameters.json'
-    overrideParameters: >-
-      -backendImage $(backendImage)
-      -backendIngressTraffic $(backendIngressTraffic)
-      -backendRevisionSuffix $(backendRevisionSuffix)
-    deploymentMode: 'Incremental'
-    deploymentName: '$(Build.Buildnumber)-$(System.JobAttempt)'
