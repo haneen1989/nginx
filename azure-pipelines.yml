@@ -13,9 +13,8 @@ pool:
 
 steps:
 - task: AzureResourceManagerTemplateDeployment@3
-  displayName: Deploy Container Apps
  inputs:
-  azureResourceManagerConnection: haneenarm
+  azureResourceManagerConnection: 'haneenarm'
   subscriptionId: $(subscriptionId)
   resourceGroupName: $(resourceGroupApps)
   location: northeurope
@@ -25,3 +24,5 @@ steps:
       -backendImage $(backendImage) -backendIngressTraffic $(backendIngressTraffic) -backendRevisionSuffix $(backendRevisionSuffix)
   deploymentMode: Incremental
   deploymentName: "$(Build.Buildnumber)-$(System.JobAttempt)"
+  displayName: Deploy Container Apps
+
